@@ -19,9 +19,11 @@ class ElementAttribute {
 }
 
 class Component {
-  constructor(renderHookId) {
+  constructor(renderHookId, shouldRender = true) {
     this.hookId = renderHookId;
-    this.render();
+    if (shouldRender) {
+      this.render();
+    }
   }
   render() {}
 
@@ -69,21 +71,29 @@ class ShoppingCart extends Component {
     this.cartItems = updatedItems;
   }
 
+  orderProducts() {
+    console.log("ordering");
+    console.log(this.items);
+  }
+
   render() {
     const cartEl = this.createRootElement("section", "cart");
     cartEl.innerHTML = `
   <h2>Total: \$${0}</h2>
-  <buttton>Order Now!</button>
+  <button>Order Now!</button>
   
   `;
+    const orderButton = cartEl.querySelector("button");
+    orderButton.addEventListener("click", this.orderProducts.bind(this));
     this.totalOutput = cartEl.querySelector("h2");
   }
 }
 
 class ProductItem extends Component {
   constructor(Product, renderHookId) {
-    super(renderHookId);
+    super(renderHookId, false);
     this.product = Product;
+    this.render();
   }
 
   addToCart() {
@@ -94,12 +104,12 @@ class ProductItem extends Component {
     prodEl.innerHTML = `
           <div>
            <img src = "${this.product.imageURL}" alt =  "${this.product.title}">
-            <div class = "product_item__content">
+            <div class = "product-item__content">
              <h2>${this.product.title}</h2>
              <h3>${this.product.price}</h3>
              <p>${this.product.description}</p>
-             <button>Add To Cart</button>
-            </div>
+             <button>Add to Cart</button>
+             </div>
           
           </div>
           
@@ -110,15 +120,16 @@ class ProductItem extends Component {
 }
 
 class ProductList extends Component {
-  products = [];
+  #products = [];
 
   constructor(renderHookId) {
-    super(renderHookId);
+    super(renderHookId, false);
+    this.render();
     this.fetchProducts();
   }
 
   fetchProducts() {
-    this.products = [
+    this.#products = [
       new Product(
         "A Pillow",
         "https://www.google.com/search?sca_esv=8b0f0bb61a9c22c4&rlz=1C1GCEU_enEG1089EG1089&sxsrf=ACQVn0864SLUmMhMDAVPiKdN3z2oUNdGzQ:1707498541598&q=pillow+pic&tbm=isch&source=lnms&sa=X&ved=2ahUKEwiI1Zrg356EAxVrTaQEHbzKC4YQ0pQJegQICRAB&biw=1920&bih=919&dpr=1#imgrc=4Lip-WjrqfyJVM",
@@ -137,7 +148,7 @@ class ProductList extends Component {
   }
 
   renderProducts() {
-    for (const prod of this.products) {
+    for (const prod of this.#products) {
       new ProductItem(prod, "prod-list");
     }
   }
@@ -146,7 +157,7 @@ class ProductList extends Component {
     this.createRootElement("ul", "product-list", [
       new ElementAttribute("id", "prod-list"),
     ]);
-    if (this.products && this.products.length > 0) {
+    if (this.#products && this.#products.length > 0) {
       this.renderProducts();
     }
   }
